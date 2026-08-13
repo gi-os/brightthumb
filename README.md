@@ -16,7 +16,7 @@ a monochrome display.
   grays) tuned for the LPIII's B&W e-ink-style panel; dark mode is the default.
 - **Launcher icon**: inverted to a white-on-black mark that sits correctly on the
   LightOS home screen.
-- **Versioning**: v1.0.0, independent of upstream releases.
+- **Versioning**: v1.0.x, independent of upstream releases.
 
 Everything else — the layouts (including the default one-thumb `ENThumbKey`
 layout), the swipe gestures, the settings app, the Room-backed settings — is

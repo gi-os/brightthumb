@@ -24,7 +24,7 @@ android {
         // CI stamps versionCode from the run number so it always increases;
         // local builds fall back to 1.
         versionCode = (project.findProperty("versionCode") as String? ?: "1").toInt()
-        versionName = "1.0.0"
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -77,9 +77,10 @@ android {
                 "proguard-rules.pro"
             )
         }
+        // CI ships the debug variant as the release (signed with the production
+        // keystore), so no .debug suffix — the installed identity must be exactly
+        // com.gios.brightthumb or updates break and the index mis-keys the app.
         debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = " (DEBUG)"
         }
     }
 
