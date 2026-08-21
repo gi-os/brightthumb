@@ -24,6 +24,7 @@ import com.gios.brightthumb.utils.KeyboardLayout
 import com.gios.brightthumb.utils.TAG
 import com.gios.brightthumb.utils.ThumbKeyClipboardManager
 import com.gios.brightthumb.utils.toBool
+import com.gios.brightthumb.voice.VoiceInputManager
 
 class IMEService :
     InputMethodService(),
@@ -154,6 +155,8 @@ class IMEService :
     }
 
     override fun onWindowHidden() {
+        // Drop any in-flight recording; a hidden keyboard shouldn't keep the mic hot.
+        VoiceInputManager.abort()
         currentKeyboardDefinition?.settings?.textProcessor?.handleFinishInput(this)
         super.onWindowHidden()
     }

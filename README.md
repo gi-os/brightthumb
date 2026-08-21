@@ -17,6 +17,15 @@ a monochrome display.
 - **Launcher icon**: inverted to a white-on-black mark that sits correctly on the
   LightOS home screen.
 - **Versioning**: v1.0.x, independent of upstream releases.
+- **Voice typing (v1.1.0)**: fully offline speech-to-text built in. Whisper
+  tiny.en (int8) runs on-device through
+  [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx); the model ships inside
+  the APK, so nothing is downloaded and no audio ever leaves the phone —
+  BrightThumb's no-network promise holds. Trigger it by swiping **up on the
+  return key** (or the mic swipe on the special-action key), talk, then tap ✓.
+  Punctuated, capitalized text lands at the cursor. One dictation is capped at
+  28 s (whisper's 30 s window); the first use asks for mic permission and takes
+  a few extra seconds while the model loads.
 
 Everything else — the layouts (including the default one-thumb `ENThumbKey`
 layout), the swipe gestures, the settings app, the Room-backed settings — is

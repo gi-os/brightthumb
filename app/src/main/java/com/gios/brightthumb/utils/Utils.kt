@@ -43,6 +43,7 @@ import com.gios.brightthumb.R
 import com.gios.brightthumb.db.AppSettingsViewModel
 import com.gios.brightthumb.db.DEFAULT_KEYBOARD_LAYOUT
 import com.gios.brightthumb.db.LayoutsUpdate
+import com.gios.brightthumb.voice.VoiceInputManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -1492,6 +1493,10 @@ fun performKeyAction(
                     }
                 }
             }
+        }
+
+        KeyAction.ToggleVoiceInput -> {
+            VoiceInputManager.toggle(ime)
         }
 
         KeyAction.HideKeyboard -> {

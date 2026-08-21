@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name" translatable="false">BrightThumb</string>
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_transcribing">Transcribing…</string>
+    <string name="voice_loading_model">Loading speech model…</string>
+    <string name="voice_done">Done</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_mic_granted">Mic enabled — tap the mic key again to dictate</string>
+    <string name="voice_mic_denied">BrightThumb needs mic access for voice typing</string>
     <string name="settings">Settings</string>
     <string name="system">System</string>
     <string name="light">Light</string>

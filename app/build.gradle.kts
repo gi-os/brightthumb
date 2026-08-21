@@ -24,11 +24,16 @@ android {
         // CI stamps versionCode from the run number so it always increases;
         // local builds fall back to 1.
         versionCode = (project.findProperty("versionCode") as String? ?: "1").toInt()
-        versionName = "1.0.1"
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        // The Light Phone III is arm64-only; the bundled sherpa-onnx AAR is
+        // stripped to arm64-v8a JNI libs to keep the APK and repo small.
+        ndk {
+            abiFilters += "arm64-v8a"
         }
         ksp { arg("room.schemaLocation", "$projectDir/schemas") }
     }
@@ -103,6 +108,11 @@ android {
 }
 
 dependencies {
+    // On-device speech-to-text: whisper tiny.en running through sherpa-onnx.
+    // Prebuilt AAR from https://github.com/k2-fsa/sherpa-onnx/releases/tag/v1.13.6,
+    // repackaged with only the arm64-v8a JNI libs (the LPIII is arm64-only).
+    implementation(files("libs/sherpa-onnx-1.13.6-arm64.aar"))
+
     // Freedroidwarn
     implementation("com.github.woheller69:FreeDroidWarn:V1.13")
 

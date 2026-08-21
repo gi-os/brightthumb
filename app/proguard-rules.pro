@@ -23,3 +23,6 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# sherpa-onnx JNI: native code constructs/reads these Kotlin classes by name.
+-keep class com.k2fsa.sherpa.onnx.** { *; }

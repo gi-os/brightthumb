@@ -63,10 +63,12 @@ val SWITCH_IME_KEYC =
         action = SwitchIME,
         color = MUTED,
     )
+// BrightThumb: the mic key runs the built-in offline whisper transcriber
+// instead of switching to a voice IME (LightOS doesn't ship one).
 val SWITCH_IME_VOICE_KEYC =
     KeyC(
         display = KeyDisplay.IconDisplay(Icons.Outlined.Mic),
-        action = SwitchIMEVoice,
+        action = ToggleVoiceInput,
         color = MUTED,
     )
 val SWITCH_LANGUAGE_KEYC =
@@ -412,6 +414,8 @@ val RETURN_KEY_ITEM =
         center = RETURN_KEYC,
         backgroundColor = SURFACE_VARIANT,
         longPress = CommitText("\n"),
+        // BrightThumb: swipe up on return = voice typing.
+        top = SWITCH_IME_VOICE_KEYC,
     )
 
 val RETURN_TOP_KEYC =

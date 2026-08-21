@@ -92,6 +92,8 @@ import com.gios.brightthumb.utils.getKeyboardMode
 import com.gios.brightthumb.utils.getModifiedKeyboardDefinition
 import com.gios.brightthumb.utils.keyboardPositionToAlignment
 import com.gios.brightthumb.utils.toBool
+import com.gios.brightthumb.voice.VoiceInputManager
+import com.gios.brightthumb.voice.VoiceInputState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -244,7 +246,26 @@ fun KeyboardScreen(
     val keyWidth = legendWidth.toFloat()
     val cornerRadius = (keyRadius / 100.0f) * ((keyWidth + keyHeight) / 4.0f)
 
-    if (mode == KeyboardMode.EMOJI) {
+    // Voice input takes over the whole keyboard area while active.
+    val voiceState = VoiceInputManager.state
+    if (voiceState !is VoiceInputState.Idle) {
+        val rowCount = keyboardDefinition.modes.main.arr.size
+        val keyboardHeight = Dp(keyHeight * rowCount)
+        Box(
+            modifier =
+                Modifier
+                    .then(if (!ignoreBottomPadding) Modifier.safeDrawingPadding() else Modifier)
+                    .padding(bottom = pushupSizeDp)
+                    .fillMaxWidth(),
+        ) {
+            VoiceInputScreen(
+                state = voiceState,
+                keyboardHeight = keyboardHeight,
+                onDone = { VoiceInputManager.toggle(ctx) },
+                onCancel = { VoiceInputManager.cancel() },
+            )
+        }
+    } else if (mode == KeyboardMode.EMOJI) {
         // Dynamically determine number of rows based on keyboard structure
         val rowCount = keyboardDefinition.modes.main.arr.size
         val controllerKeys =
