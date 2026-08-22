@@ -18,3 +18,6 @@ app/schemas
 .kotlin
 build.sh
 deploy_to_device.sh
+
+# The speech model is fetched at build time by :app:unpackSpeechModel.
+app/src/main/assets/parakeet-110m-en/

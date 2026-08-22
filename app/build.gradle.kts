@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
+import java.net.URI
 
 plugins {
     id("com.android.application")
@@ -14,6 +16,67 @@ kotlin {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Speech model
+// ---------------------------------------------------------------------------
+//
+// Fetched at build time rather than committed. The encoder alone is 131MB, past
+// GitHub's 100MB per-file ceiling, so it cannot live in the repo without LFS --
+// and it should not anyway: a model is a versioned artifact, not source. Pinning
+// the URL pins the model exactly, and the archive is cached in the build
+// directory, so this costs one download per machine rather than one per build.
+//
+// The extracted files are gitignored. A clean checkout builds with no extra step.
+
+val speechModelUrl =
+    "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/" +
+        "sherpa-onnx-nemo-parakeet_tdt_transducer_110m-en-36000-int8.tar.bz2"
+
+val speechModelArchive = layout.buildDirectory.file("speech-model/parakeet-110m-int8.tar.bz2")
+val speechModelAssets = layout.projectDirectory.dir("src/main/assets/parakeet-110m-en")
+
+val downloadSpeechModel by tasks.registering {
+    description = "Downloads the Parakeet TDT 110M int8 model archive."
+    // Captured as locals, not read from the script inside doLast: referencing a
+    // script property from a task action drags the whole script object into the
+    // configuration cache, which it cannot serialize.
+    val target = speechModelArchive
+    val url = speechModelUrl
+    outputs.file(target)
+    // Nothing about this task depends on the source tree, so let Gradle skip it
+    // whenever the archive is already sitting there.
+    outputs.upToDateWhen { target.get().asFile.length() > 100_000_000L }
+    doLast {
+        val out = target.get().asFile
+        if (out.length() > 100_000_000L) return@doLast
+        out.parentFile.mkdirs()
+        val tmp = File(out.parentFile, out.name + ".part")
+        URI(url).toURL().openStream().use { input ->
+            tmp.outputStream().use { output -> input.copyTo(output) }
+        }
+        // Renamed only once complete, so an interrupted download is never
+        // mistaken for a finished one on the next build.
+        tmp.renameTo(out)
+    }
+}
+
+val unpackSpeechModel by tasks.registering(Sync::class) {
+    description = "Unpacks the speech model into assets."
+    dependsOn(downloadSpeechModel)
+    // Wrapped in a lambda so the archive is only opened at execution time --
+    // it does not exist yet when this is configured.
+    from({ tarTree(resources.bzip2(speechModelArchive)) }) {
+        include("**/encoder.int8.onnx", "**/decoder.int8.onnx", "**/joiner.int8.onnx", "**/tokens.txt")
+        // Flattened: the archive nests everything under its own directory name,
+        // and VoiceInputManager addresses the files directly.
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    into(speechModelAssets)
+}
+
+tasks.named("preBuild") { dependsOn(unpackSpeechModel) }
+
 android {
     compileSdk = 36
 
@@ -24,7 +87,7 @@ android {
         // CI stamps versionCode from the run number so it always increases;
         // local builds fall back to 1.
         versionCode = (project.findProperty("versionCode") as String? ?: "1").toInt()
-        versionName = "1.1.0"
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -108,7 +171,7 @@ android {
 }
 
 dependencies {
-    // On-device speech-to-text: whisper tiny.en running through sherpa-onnx.
+    // On-device speech-to-text: NVIDIA Parakeet TDT 110M running through sherpa-onnx.
     // Prebuilt AAR from https://github.com/k2-fsa/sherpa-onnx/releases/tag/v1.13.6,
     // repackaged with only the arm64-v8a JNI libs (the LPIII is arm64-only).
     implementation(files("libs/sherpa-onnx-1.13.6-arm64.aar"))

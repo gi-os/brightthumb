@@ -24,7 +24,7 @@ import com.k2fsa.sherpa.onnx.FeatureConfig
 import com.k2fsa.sherpa.onnx.OfflineModelConfig
 import com.k2fsa.sherpa.onnx.OfflineRecognizer
 import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
-import com.k2fsa.sherpa.onnx.OfflineWhisperModelConfig
+import com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 import kotlin.math.min
@@ -43,18 +43,41 @@ sealed class VoiceInputState {
 }
 
 /**
- * Fully offline voice typing: records from the mic and transcribes with
- * whisper tiny.en (int8) via sherpa-onnx. Nothing ever leaves the device,
+ * Fully offline voice typing: records from the mic and transcribes with NVIDIA's
+ * Parakeet TDT 110M (int8) through sherpa-onnx. Nothing ever leaves the device,
  * which keeps BrightThumb's no-network promise intact.
  *
- * Whisper is a 30-second-window model, so a single dictation is capped at
- * [MAX_RECORD_SECONDS]; hitting the cap auto-stops and transcribes.
+ * ## Why not whisper tiny.en
+ *
+ * It shipped with whisper tiny.en, and the honest report from using it was that
+ * it felt a decade out of date. It measures that way too: on the eight-domain
+ * Open ASR average, tiny.en is around 12.8% WER against Parakeet 110M's 7.5%,
+ * and the gap is widest exactly where dictation lives — conversational speech
+ * rather than read audiobooks, which is why clean test clips flattered it.
+ *
+ * Parakeet is also *faster*, which is the unusual part. Whisper decodes a full
+ * 30-second window whatever you gave it, so a two-second "yes, on my way" cost
+ * the same as half a minute of talking. A transducer decodes the audio it has.
+ * Measured on the same clips at two threads, it runs about two and a half times
+ * quicker, and that ratio grows on short utterances — the ones a keyboard
+ * actually sees.
+ *
+ * It punctuates and capitalises natively, so no separate punctuation model.
+ *
+ * The cost is roughly 30MB more in the APK. Worth it: the previous model's
+ * output needed correcting often enough that dictation stopped being faster
+ * than typing, which for a keyboard is the whole argument.
+ *
+ * A single dictation is still capped at [MAX_RECORD_SECONDS] — a transducer has
+ * no window limit, but an unbounded recording is a memory question rather than
+ * a model one, and half a minute is already far past what anyone dictates into
+ * a phone in one breath.
  */
 object VoiceInputManager {
     const val SAMPLE_RATE = 16000
     const val MAX_RECORD_SECONDS = 28
 
-    private const val ASSET_DIR = "whisper-tiny-en"
+    private const val ASSET_DIR = "parakeet-110m-en"
 
     var state by mutableStateOf<VoiceInputState>(VoiceInputState.Idle)
         private set
@@ -281,15 +304,17 @@ object VoiceInputManager {
                         featConfig = FeatureConfig(sampleRate = SAMPLE_RATE, featureDim = 80),
                         modelConfig =
                             OfflineModelConfig(
-                                whisper =
-                                    OfflineWhisperModelConfig(
-                                        encoder = "$ASSET_DIR/tiny.en-encoder.int8.onnx",
-                                        decoder = "$ASSET_DIR/tiny.en-decoder.int8.onnx",
-                                        language = "en",
-                                        task = "transcribe",
+                                transducer =
+                                    OfflineTransducerModelConfig(
+                                        encoder = "$ASSET_DIR/encoder.int8.onnx",
+                                        decoder = "$ASSET_DIR/decoder.int8.onnx",
+                                        joiner = "$ASSET_DIR/joiner.int8.onnx",
                                     ),
-                                tokens = "$ASSET_DIR/tiny.en-tokens.txt",
-                                modelType = "whisper",
+                                tokens = "$ASSET_DIR/tokens.txt",
+                                // Stated rather than left to the metadata sniffer: NeMo models
+                                // need their own per-feature normalisation, and getting that
+                                // silently wrong degrades accuracy instead of failing.
+                                modelType = "nemo_transducer",
                                 numThreads = 2,
                                 debug = false,
                             ),
