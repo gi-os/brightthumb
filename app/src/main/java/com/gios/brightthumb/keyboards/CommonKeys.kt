@@ -110,6 +110,11 @@ fun specialActionKeyItem(center: KeyC): KeyItemC =
         center = center,
         top = GOTO_SETTINGS_KEYC,
         topLeft = TOGGLE_HIDE_LETTERS_KEYC,
+        // Dismiss the keyboard. Upstream defines this key and then never places
+        // it in a layout, so out of the box there is no way to put the keyboard
+        // away from the keyboard itself — you have to find the system's back
+        // gesture. Down-and-away is the direction the icon already points.
+        bottomRight = HIDE_KEYBOARD_KEYC,
         bottom = SWITCH_IME_KEYC,
         bottomLeft = SWITCH_IME_VOICE_KEYC,
         left = SWITCH_LANGUAGE_KEYC,

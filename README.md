@@ -33,6 +33,10 @@ a monochrome display.
   only the audio you gave it, so brief dictation got much quicker as well as
   more accurate.
 
+- **Close-keyboard key**: swipe **down-right on the emoji key** to dismiss the
+  keyboard. Thumb-Key defines this key but never places it in a layout, so
+  upstream there is no way to put the keyboard away from the keyboard itself.
+
 Everything else — the layouts (including the default one-thumb `ENThumbKey`
 layout), the swipe gestures, the settings app, the Room-backed settings — is
 stock Thumb-Key.
