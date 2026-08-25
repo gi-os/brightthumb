@@ -77,8 +77,6 @@ there.
 
 ## Bright\*
 
-*One-thumb typing on a narrow black-and-white panel, entirely on-device.*
-
 26 open-source apps for the **Light Phone III** — camera, music, maps, messages,
 reading, transit, games. The phone has no app store, so they install by sideload: scan one
 code from **[brightmarket.gzl.dev](https://brightmarket.gzl.dev)** and BrightMarket keeps them updated.
