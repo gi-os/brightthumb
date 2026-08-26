@@ -1,3 +1,5 @@
+<img src="docs/icon.png" alt="" width="72" align="left" />
+
 # BrightThumb
 
 A privacy-first, one-thumb keyboard for the **Light Phone III**, forked from
