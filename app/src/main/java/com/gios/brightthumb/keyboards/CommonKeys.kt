@@ -292,10 +292,12 @@ val NEXT_WORD_AFTER_CURSOR_KEYC =
 val BACKSPACE_KEY_ITEM =
     KeyItemC(
         center = BACKSPACE_KEYC,
-        swipeType = TWO_WAY_HORIZONTAL,
+        swipeType = EIGHT_WAY,
         slideType = SlideType.DELETE,
         left = DELETE_WORD_BEFORE_CURSOR_KEYC,
         right = DELETE_WORD_AFTER_CURSOR_KEYC,
+        // BrightThumb: swipe down on delete dismisses the keyboard.
+        bottom = HIDE_KEYBOARD_KEYC,
         backgroundColor = SURFACE_VARIANT,
         longPress = DeleteWordBeforeCursor,
     )
@@ -419,8 +421,6 @@ val RETURN_KEY_ITEM =
         center = RETURN_KEYC,
         backgroundColor = SURFACE_VARIANT,
         longPress = CommitText("\n"),
-        // BrightThumb: swipe up on return = voice typing.
-        top = SWITCH_IME_VOICE_KEYC,
     )
 
 val RETURN_TOP_KEYC =
