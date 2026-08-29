@@ -87,7 +87,7 @@ android {
         // CI stamps versionCode from the run number so it always increases;
         // local builds fall back to 1.
         versionCode = (project.findProperty("versionCode") as String? ?: "1").toInt()
-        versionName = "1.2.0"
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
