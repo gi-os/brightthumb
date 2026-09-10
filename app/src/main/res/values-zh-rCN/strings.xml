@@ -31,7 +31,7 @@
     <string name="follow_me_mastodon">在Mastodon上关注我</string>
     <string name="open_source">开源</string>
     <string name="source_code">源码</string>
-    <string name="source_code_subtitle">Thumb-Key是一个自由开源软件, 使用GNU Affero General Public License v3.0协议传播</string>
+    <string name="source_code_subtitle">BrightThumb是一个自由开源软件, 使用GNU Affero General Public License v3.0协议传播</string>
     <string name="look_and_feel">外观和体验</string>
     <string name="behavior">行为</string>
     <string name="layouts">布局</string>
@@ -66,7 +66,7 @@
     <string name="test_out_thumbkey">点我测试键盘效果</string>
     <string name="setup">设置</string>
     <string name="user_guide">用户手册</string>
-    <string name="setup_thumbkey">设置Thumb-Key</string>
+    <string name="setup_thumbkey">设置BrightThumb</string>
     <string name="enable_thumbkey">启用输入法</string>
     <string name="select_thumbkey">选择输入法</string>
     <string name="finish_setup">完成设置</string>

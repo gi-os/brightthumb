@@ -21,13 +21,13 @@
     <string name="about">O aplikacji</string>
     <string name="whats_new">Co nowego</string>
     <string name="releases">Wydania</string>
-    <string name="donate_to_thumbkey">Przekaż darowiznę Thumb-Key</string>
+    <string name="donate_to_thumbkey">Przekaż darowiznę BrightThumb</string>
     <string name="social">Media społecznościowe</string>
     <string name="srcery">Srcery</string>
     <string name="join_c_thumbkey">Dołącz do c/thumbkey</string>
     <string name="follow_me_mastodon">Obserwuj mnie na Mastodonie</string>
     <string name="source_code">Kod źródłowy</string>
-    <string name="source_code_subtitle">Thumb-Key to wolne otwarto źródłowe oprogramowanie, które używa licencji GNU Affero General Public License v3.0</string>
+    <string name="source_code_subtitle">BrightThumb to wolne otwarto źródłowe oprogramowanie, które używa licencji GNU Affero General Public License v3.0</string>
     <string name="look_and_feel">Wygląd</string>
     <string name="behavior">Zachowanie</string>
     <string name="layouts">Układy</string>
@@ -48,7 +48,7 @@
     <string name="auto_capitalize">Zaczynaj wielką literą</string>
     <string name="backup_and_restore">Zapisz kopię zapasową oraz przywróć</string>
     <string name="user_guide">Przewodnik dla użytkownika</string>
-    <string name="select_thumbkey">Wybierz Thumb-Key</string>
+    <string name="select_thumbkey">Wybierz BrightThumb</string>
     <string name="copy">Skopiuj wybrany tekst</string>
     <string name="hide_letters">Ukryj litery</string>
     <string name="hide_symbols">Ukryj symbole</string>
@@ -56,7 +56,7 @@
     <string name="restore_database_warning">Uwaga: To wyczyści twoją obecną bazę danych</string>
     <string name="database_backed_up">Kopia zapasowa bazy danych została wykonana.</string>
     <string name="green">Zielony</string>
-    <string name="test_out_thumbkey">Przetestuj Thumb-Key</string>
+    <string name="test_out_thumbkey">Przetestuj BrightThumb</string>
     <string name="issue_tracker">Śledzenie zgłoszeń</string>
     <string name="setup">Konfiguracja</string>
     <string name="done">Gotowe</string>
