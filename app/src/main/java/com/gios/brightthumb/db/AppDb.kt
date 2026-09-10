@@ -19,12 +19,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.gios.brightthumb.BuildConfig
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 
 const val DEFAULT_AUTO_SIZE_KEYS = 1
@@ -563,9 +558,6 @@ interface AppSettingsDao {
 class AppSettingsRepository(
     private val appSettingsDao: AppSettingsDao,
 ) {
-    private val _changelog = MutableStateFlow("")
-    val changelog = _changelog.asStateFlow()
-
     // Room executes all queries on a separate thread.
     // Observed Flow will notify the observer when the data has changed.
     val appSettings = appSettingsDao.getSettings()
@@ -608,22 +600,6 @@ class AppSettingsRepository(
     @WorkerThread
     suspend fun updateLastVersionCodeViewed(versionCode: Int) {
         appSettingsDao.updateLastVersionCode(versionCode)
-    }
-
-    @WorkerThread
-    suspend fun updateChangelog(ctx: Context) {
-        withContext(Dispatchers.IO) {
-            try {
-                val releasesStr =
-                    ctx.assets
-                        .open("RELEASES.md")
-                        .bufferedReader()
-                        .use { it.readText() }
-                _changelog.value = releasesStr
-            } catch (e: Exception) {
-                Log.e("thumb-key", "Failed to load changelog: $e")
-            }
-        }
     }
 }
 
@@ -684,19 +660,28 @@ abstract class AppDB : RoomDatabase() {
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {
                                     super.onCreate(db)
+                                    // Runs on a raw executor, so nothing above it can catch
+                                    // this: an exception from an insert on a database that is
+                                    // closing (the IME process is torn down constantly) would
+                                    // reach the thread's default handler and kill the process.
+                                    // The row is a default, not something worth dying for.
                                     Executors.newSingleThreadExecutor().execute {
-                                        db.insert(
-                                            "AppSettings",
-                                            // Ensures it won't overwrite the existing data
-                                            CONFLICT_IGNORE,
-                                            ContentValues(2).apply {
-                                                put("id", 1)
-                                                put(
-                                                    "show_on_screen_keyboard",
-                                                    if (BuildConfig.DEBUG) 1 else DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
-                                                )
-                                            },
-                                        )
+                                        try {
+                                            db.insert(
+                                                "AppSettings",
+                                                // Ensures it won't overwrite the existing data
+                                                CONFLICT_IGNORE,
+                                                ContentValues(2).apply {
+                                                    put("id", 1)
+                                                    put(
+                                                        "show_on_screen_keyboard",
+                                                        DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
+                                                    )
+                                                },
+                                            )
+                                        } catch (e: Throwable) {
+                                            Log.e("brightthumb", "could not seed settings", e)
+                                        }
                                     }
                                 }
                             },
@@ -713,7 +698,6 @@ class AppSettingsViewModel(
     private val repository: AppSettingsRepository,
 ) : ViewModel() {
     val appSettings = repository.appSettings
-    val changelog = repository.changelog
 
     fun update(appSettings: AppSettings) =
         viewModelScope.launch {
@@ -753,11 +737,6 @@ class AppSettingsViewModel(
     fun updateLastVersionCodeViewed(versionCode: Int) =
         viewModelScope.launch {
             repository.updateLastVersionCodeViewed(versionCode)
-        }
-
-    fun updateChangelog(ctx: Context) =
-        viewModelScope.launch {
-            repository.updateChangelog(ctx)
         }
 }
 

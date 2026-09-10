@@ -87,7 +87,7 @@ android {
         // CI stamps versionCode from the run number so it always increases;
         // local builds fall back to 1.
         versionCode = (project.findProperty("versionCode") as String? ?: "1").toInt()
-        versionName = "1.2.1"
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -176,9 +176,6 @@ dependencies {
     // repackaged with only the arm64-v8a JNI libs (the LPIII is arm64-only).
     implementation(files("libs/sherpa-onnx-1.13.6-arm64.aar"))
 
-    // Freedroidwarn
-    implementation("com.github.woheller69:FreeDroidWarn:V1.13")
-
     // Exporting / importing DB helper
     implementation("com.github.dessalines:room-db-export-import:0.1.1")
 
@@ -203,9 +200,6 @@ dependencies {
 
     // Emoji Picker
     implementation("androidx.emoji2:emoji2-emojipicker:1.6.0")
-
-    // Markdown
-    implementation("com.github.jeziellago:compose-markdown:0.7.2")
 
     // Preferences
     implementation("me.zhanghai.compose.preference:library:1.1.1")

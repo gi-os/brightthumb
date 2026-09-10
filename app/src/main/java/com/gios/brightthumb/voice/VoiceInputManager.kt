@@ -163,8 +163,18 @@ object VoiceInputManager {
         // first dictation doesn't stare at a spinner before it can even listen.
         ensureRecognizerAsync(ime.applicationContext)
 
+        // A raw Thread has no handler above it: anything recordLoop throws goes
+        // straight to the default uncaught handler and kills the IME process
+        // mid-dictation. Surface it as an error state instead.
         recordingThread =
-            Thread({ recordLoop() }, "brightthumb-voice-record").also { it.start() }
+            Thread({
+                try {
+                    recordLoop()
+                } catch (e: Throwable) {
+                    Log.e(TAG, "voice recording failed", e)
+                    postError("Voice input failed")
+                }
+            }, "brightthumb-voice-record").also { it.start() }
     }
 
     @SuppressLint("MissingPermission") // checked in start()
@@ -322,9 +332,9 @@ object VoiceInputManager {
                     )
                 recognizer = OfflineRecognizer(appContext.assets, config)
                 mainHandler.post { modelReady = true }
-                Log.d(TAG, "whisper tiny.en loaded")
+                Log.d(TAG, "parakeet model loaded")
             } catch (e: Throwable) {
-                Log.e(TAG, "failed to load whisper model", e)
+                Log.e(TAG, "failed to load the speech model", e)
                 postError("Speech model failed to load")
             }
         }

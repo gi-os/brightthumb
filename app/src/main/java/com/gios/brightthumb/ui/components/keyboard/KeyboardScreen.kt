@@ -94,6 +94,7 @@ import com.gios.brightthumb.utils.keyboardPositionToAlignment
 import com.gios.brightthumb.utils.toBool
 import com.gios.brightthumb.voice.VoiceInputManager
 import com.gios.brightthumb.voice.VoiceInputState
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -690,7 +691,16 @@ fun KeyboardScreen(
         }
     } else if (mode == KeyboardMode.CLIPBOARD) {
         // Clipboard history view
-        val scope = CoroutineScope(Dispatchers.IO)
+        // A handler, not a bare scope: these launches write to Room from the IME
+        // process, and an uncaught exception in a launch takes the process down
+        // with it -- which for a keyboard means it vanishes mid-sentence.
+        val scope =
+            CoroutineScope(
+                Dispatchers.IO +
+                    CoroutineExceptionHandler { _, e ->
+                        Log.e(TAG, "clipboard history write failed", e)
+                    },
+            )
         val clipboardHistoryEnabled =
             (settings?.clipboardHistoryEnabled ?: DEFAULT_CLIPBOARD_HISTORY_ENABLED).toBool()
 

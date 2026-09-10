@@ -39,6 +39,17 @@ a monochrome display.
   keyboard. Thumb-Key defines this key but never places it in a layout, so
   upstream there is no way to put the keyboard away from the keyboard itself.
 
+- **No startup dialogs (v1.3.0)**: upstream shows two on launch, and both came
+  back on every update because CI stamps a new version code each release. The
+  F-Droid distribution warning and the changelog dialog with its donation
+  section are both gone, along with the donate and social rows in About. The
+  upstream credit stays: the keyboard is Thumb-Key's work.
+
+- **Crash log (v1.3.0)**: the IME is a service, so it wakes for a clipboard
+  change or a settings write and can die in the background with no dialog and
+  no logcat attached. Uncaught exceptions now go to a file first, and
+  **Settings -> About -> Last crash** shows the trace and copies it out.
+
 Everything else — the layouts (including the default one-thumb `ENThumbKey`
 layout), the swipe gestures, the settings app, the Room-backed settings — is
 stock Thumb-Key.

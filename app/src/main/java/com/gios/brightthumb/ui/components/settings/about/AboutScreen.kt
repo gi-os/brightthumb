@@ -4,16 +4,14 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.NewReleases
-import androidx.compose.material.icons.outlined.TravelExplore
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,16 +20,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.gios.brightthumb.CrashLog
 import com.gios.brightthumb.R
 import com.gios.brightthumb.utils.SimpleTopAppBar
 import com.gios.brightthumb.utils.TAG
@@ -40,12 +43,9 @@ import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.PreferenceCategory
 import me.zhanghai.compose.preference.ProvidePreferenceTheme
 
-const val GITHUB_URL = "https://github.com/dessalines/thumb-key"
+const val GITHUB_URL = "https://github.com/gi-os/BrightThumb"
 const val USER_GUIDE_URL = "https://github.com/dessalines/thumb-key#user-guide"
-const val MATRIX_CHAT_URL = "https://matrix.to/#/#thumbkey-dev:matrix.org"
-const val DONATE_URL = "https://liberapay.com/dessalines"
-const val LEMMY_URL = "https://lemmy.ml/c/thumbkey"
-const val MASTODON_URL = "https://mastodon.social/@dessalines"
+const val UPSTREAM_URL = "https://github.com/dessalines/thumb-key"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +58,42 @@ fun AboutScreen(navController: NavController) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
+
+    // Read once, on entry. The log only changes when the process dies, and by then
+    // this screen is gone with it.
+    val crashLog = remember { CrashLog.read(ctx) }
+    var crashDialogOpen by remember { mutableStateOf(false) }
+
+    if (crashDialogOpen && crashLog != null) {
+        AlertDialog(
+            onDismissRequest = { crashDialogOpen = false },
+            title = { Text(stringResource(R.string.last_crash)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = crashLog,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    CrashLog.copyToClipboard(ctx, crashLog)
+                    crashDialogOpen = false
+                }) {
+                    Text(stringResource(R.string.copy_crash_log))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    CrashLog.clear(ctx)
+                    crashDialogOpen = false
+                }) {
+                    Text(stringResource(R.string.clear_crash_log))
+                }
+            },
+        )
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -83,7 +119,7 @@ fun AboutScreen(navController: NavController) {
                             )
                         },
                         onClick = {
-                            openLink("$GITHUB_URL/blob/main/RELEASES.md", ctx)
+                            openLink("$GITHUB_URL/releases", ctx)
                         },
                     )
                     SettingsDivider()
@@ -102,60 +138,28 @@ fun AboutScreen(navController: NavController) {
                             openLink("$GITHUB_URL/issues", ctx)
                         },
                     )
-                    Preference(
-                        title = { Text(stringResource(R.string.developer_matrix_chatroom)) },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.Chat,
-                                contentDescription = stringResource(R.string.developer_matrix_chatroom),
-                            )
-                        },
-                        onClick = {
-                            openLink(MATRIX_CHAT_URL, ctx)
-                        },
-                    )
-
-                    Preference(
-                        title = { Text(stringResource(R.string.donate_to_thumbkey)) },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.AttachMoney,
-                                contentDescription = stringResource(R.string.donate_to_thumbkey),
-                            )
-                        },
-                        onClick = {
-                            openLink(DONATE_URL, ctx)
-                        },
-                    )
-                    SettingsDivider()
-                    PreferenceCategory(
-                        title = { Text(stringResource(R.string.social)) },
-                    )
-                    Preference(
-                        title = { Text(stringResource(R.string.join_c_thumbkey)) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.thumb_key_icon),
-                                modifier = Modifier.size(32.dp),
-                                contentDescription = stringResource(R.string.join_c_thumbkey),
-                            )
-                        },
-                        onClick = {
-                            openLink(LEMMY_URL, ctx)
-                        },
-                    )
-                    Preference(
-                        title = { Text(stringResource(R.string.follow_me_mastodon)) },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.TravelExplore,
-                                contentDescription = stringResource(R.string.follow_me_mastodon),
-                            )
-                        },
-                        onClick = {
-                            openLink(MASTODON_URL, ctx)
-                        },
-                    )
+                    // Only shown when there is something to show. A keyboard dies in the
+                    // background, where nobody is watching, so the stack trace has to
+                    // outlive the process and be readable without a cable.
+                    if (crashLog != null) {
+                        Preference(
+                            title = { Text(stringResource(R.string.last_crash)) },
+                            summary = {
+                                Text(
+                                    text = crashLog.lineSequence().firstOrNull().orEmpty(),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.WarningAmber,
+                                    contentDescription = stringResource(R.string.last_crash),
+                                )
+                            },
+                            onClick = { crashDialogOpen = true },
+                        )
+                    }
                     SettingsDivider()
                     PreferenceCategory(
                         title = { Text(stringResource(R.string.open_source)) },
@@ -173,6 +177,19 @@ fun AboutScreen(navController: NavController) {
                         },
                         onClick = {
                             openLink(GITHUB_URL, ctx)
+                        },
+                    )
+                    Preference(
+                        title = { Text(stringResource(R.string.upstream_project)) },
+                        summary = { Text(stringResource(R.string.upstream_project_subtitle)) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Code,
+                                contentDescription = stringResource(R.string.upstream_project),
+                            )
+                        },
+                        onClick = {
+                            openLink(UPSTREAM_URL, ctx)
                         },
                     )
                 }

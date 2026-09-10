@@ -3,6 +3,7 @@ package com.gios.brightthumb
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -17,9 +18,11 @@ import com.gios.brightthumb.db.ClipboardRepository
 import com.gios.brightthumb.ui.components.keyboard.KeyboardScreen
 import com.gios.brightthumb.ui.theme.ThumbkeyTheme
 import com.gios.brightthumb.utils.KeyboardPosition
+import com.gios.brightthumb.utils.TAG
 import com.gios.brightthumb.utils.keyboardLayoutsSetFromDbIndexString
 import com.gios.brightthumb.utils.toBool
 import com.gios.brightthumb.utils.toInt
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 
 @SuppressLint("ViewConstructor")
@@ -34,6 +37,14 @@ class ComposeKeyboardView(
         val settings by settingsState
         val ctx = context as IMEService
 
+        // Every launch below writes settings from inside the IME process. An
+        // uncaught exception in a launch reaches the thread's default handler and
+        // kills that process, so none of them may run bare.
+        val onFailure =
+            CoroutineExceptionHandler { _, e ->
+                Log.e(TAG, "keyboard settings write failed", e)
+            }
+
         ThumbkeyTheme(
             settings = settings,
         ) {
@@ -42,7 +53,7 @@ class ComposeKeyboardView(
                     settings = settings,
                     clipboardRepository = clipboardRepo,
                     onSwitchLanguage = {
-                        ctx.lifecycleScope.launch {
+                        ctx.lifecycleScope.launch(onFailure) {
                             // Cycle to the next keyboard
                             val state = settingsState.value
                             state?.let { s ->
@@ -79,7 +90,7 @@ class ComposeKeyboardView(
                         }
                     },
                     onChangePosition = { f ->
-                        ctx.lifecycleScope.launch {
+                        ctx.lifecycleScope.launch(onFailure) {
                             val state = settingsState.value
                             state?.let { s ->
                                 val nextPosition = f(KeyboardPosition.entries[s.position]).ordinal
@@ -89,7 +100,7 @@ class ComposeKeyboardView(
                         }
                     },
                     onToggleHideLetters = {
-                        ctx.lifecycleScope.launch {
+                        ctx.lifecycleScope.launch(onFailure) {
                             val state = settingsState.value
                             state?.let { s ->
                                 val newHideLetters = (!s.hideLetters.toBool()).toInt()

@@ -36,9 +36,18 @@ class IMEService :
         val settingsRepo = app.appSettingsRepository
         val clipboardRepo = app.clipboardRepository
 
+        // getOrNull, not [], on purpose. This is a stored index into an enum whose
+        // length changes between releases, and indexing it out of range would throw
+        // on every single keystroke-window the keyboard opens. A stale index falls
+        // back to whatever definition is already loaded instead.
         val layoutIndex = settingsRepo.appSettings.value?.keyboardLayout
         if (layoutIndex != null) {
-            currentKeyboardDefinition = KeyboardLayout.entries[layoutIndex].keyboardDefinition
+            val layout = KeyboardLayout.entries.getOrNull(layoutIndex)
+            if (layout != null) {
+                currentKeyboardDefinition = layout.keyboardDefinition
+            } else {
+                Log.e(TAG, "no keyboard layout at index $layoutIndex")
+            }
         }
 
         val view = ComposeKeyboardView(this, settingsRepo, clipboardRepo)

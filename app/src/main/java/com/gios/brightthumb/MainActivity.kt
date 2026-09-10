@@ -23,7 +23,6 @@ import com.gios.brightthumb.db.AppSettingsViewModel
 import com.gios.brightthumb.db.AppSettingsViewModelFactory
 import com.gios.brightthumb.db.ClipboardDB
 import com.gios.brightthumb.db.ClipboardRepository
-import com.gios.brightthumb.ui.components.common.ShowChangelog
 import com.gios.brightthumb.ui.components.settings.SettingsScreen
 import com.gios.brightthumb.ui.components.settings.about.AboutScreen
 import com.gios.brightthumb.ui.components.settings.backupandrestore.BackupAndRestoreScreen
@@ -36,11 +35,17 @@ import com.gios.brightthumb.ui.components.setup.SetupScreen
 import com.gios.brightthumb.ui.theme.ThumbkeyTheme
 import com.gios.brightthumb.utils.ANIMATION_SPEED
 import com.gios.brightthumb.utils.getImeNames
-import com.gios.brightthumb.utils.getVersionCode
-import org.woheller69.freeDroidWarn.FreeDroidWarn
 import splitties.systemservices.inputMethodManager
 
 class ThumbkeyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        // Installed here rather than in the activity: most of this app's life is
+        // spent as an IME service with no activity on screen, and that is exactly
+        // where the crashes nobody can see happen.
+        CrashLog.install(this)
+    }
+
     private val database by lazy { AppDB.getDatabase(this) }
     private val clipboardDatabase by lazy { ClipboardDB.getDatabase(this) }
     val appSettingsRepository by lazy { AppSettingsRepository(database.appSettingsDao()) }
@@ -58,8 +63,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        FreeDroidWarn.showWarningOnUpgrade(this, getVersionCode())
-
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
@@ -93,10 +96,6 @@ class MainActivity : AppCompatActivity() {
                 settings = settings,
             ) {
                 val navController = rememberNavController()
-
-                if (startDestination == "settings") {
-                    ShowChangelog(appSettingsViewModel = appSettingsViewModel)
-                }
 
                 NavHost(
                     navController = navController,
