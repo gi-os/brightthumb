@@ -2,6 +2,8 @@
 
 # BrightThumb
 
+[**⬇ Download the latest APK**](https://github.com/gi-os/brightthumb/releases/latest) · free, open source.
+
 A privacy-first, one-thumb keyboard for the **Light Phone III**, forked from
 [Thumb-Key](https://github.com/dessalines/thumb-key) and adapted to the LightOS
 black-and-white panel.
